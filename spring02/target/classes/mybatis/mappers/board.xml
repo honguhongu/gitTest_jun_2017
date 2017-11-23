@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.board">
+<!-- 리절트 맵 정의 -->	
+	<resultMap id="brdResult" type="boardDTO">
+	    <result property="num" column="num" />
+		<result property="author" column="author" />
+		<result property="title" column="title" />
+		<result property="content" column="content" />
+		<result property="email" column="email" />
+		<result property="passwd" column="passwd" />
+		<result property="imageFile" column="imageFile"/>
+		<result property="id" column="id"/>
+		<result property="newWrite" column="newWrite"/>
+	</resultMap>	
+	<resultMap id="imageResult" type="imageDTO">
+        <result property="num" column="num" />
+        <result property="imageFileName" column="imageFileName" />
+        <result property="regDate" column="regDate" />
+        <result property="imageNum" column="imageNum" />
+    </resultMap>    
+
+	<select id="listBoard" resultMap="brdResult" parameterType="string" >
+	    <![CDATA[
+	  select b.*,
+      decode(round(sysdate-writeday),0,'true','false') as newWrite
+      from Board b
+	  where publicWrite=#{publicWrite}
+   	  order by num desc
+		]]>
+	</select>
+	
+	<select id="writeDetail" parameterType="int" resultType="com.spring.mytest02.board.dto.BoardDTO"   >
+        <![CDATA[
+             select * from Board 
+             where num=#{num}
+        ]]>
+    </select>
+    
+    
+    <insert id="addWrite" parameterType="hashmap">
+        <![CDATA[
+            insert into Board(num,
+                              author,
+                              title,
+                              content,
+                              email,
+                              passwd,
+                              imageFile,
+                              writeday,
+                              publicWrite,
+                              id)
+                        values(#{num},
+                               #{author},
+                               #{title},
+                               #{content},
+                               #{email},
+                               #{passwd},
+                               '',
+                               sysdate,
+                               #{publicWrite},
+                               #{id})
+        ]]>
+    </insert>
+    <insert id="addImageFile" parameterType="hashmap">
+         <![CDATA[
+        insert into t_image(imageNum, 
+                           imageFileName,
+                           num,
+                           regDate)
+                   values(seq_image_num.nextval,
+                          #{imageFileName},
+                          #{num},
+                          sysdate)
+         ]]>
+    </insert>
+    
+    <select id="getPrimarykey" resultType="int">
+        <![CDATA[
+           select max(num)+1 as num from Board
+        ]]>
+    </select>
+    
+    <update id="modWrite" parameterType="hashmap">
+        <![CDATA[
+            update Board
+            set title=#{title},
+                content=#{content},
+                imageFile=#{imageFile}
+            where
+                num=#{num}
+        ]]>
+    </update>
+    
+    <delete id="delWrite" parameterType="int">
+        <![CDATA[
+            delete from Board
+            where num=#{num}
+        ]]>
+    </delete>
+    
+    <select id="listImageFile" parameterType="int" resultMap="imageResult">
+        <![CDATA[
+            select * from t_image
+            where num=#{num}
+        ]]>
+    </select>
+    
+	
+	
+</mapper>
